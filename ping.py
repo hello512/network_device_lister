@@ -15,7 +15,7 @@ class ICMPHeader:
         self.type = typ
         self.code = code
         self.checksum = self.calc_checksum() if not checksum else checksum
-    
+
 
     def calc_checksum(self):
         #this function is wrong :D
@@ -25,7 +25,7 @@ class ICMPHeader:
     def get_bytes(self):
         print(self.checksum & 0xffffffff)
         return self.type.to_bytes(1, "big") + self.code.to_bytes(1, "big") + self.checksum.to_bytes(2, "big")
-   
+
 class ICMPMessage:
     def __init__(self, header):
         self.header = header.get_bytes()
@@ -36,7 +36,7 @@ class ICMPMessage:
 
     def getbmessage(self):
         print(self.timestamp)
-        return self.header + self.identifier.to_bytes(2, "big") + self.sequence_num.to_bytes(2, "big") + self.timestamp.to_bytes(4, "big") + self.data
+        return self.header + self.identifier.to_bytes(2, "big") + self.sequence_num.to_bytes(2, "big") + self.timestamp.to_bytes(4, "big") + int(0).to_bytes(4, "big") + self.data
 
 def ping():
     pass
