@@ -11,37 +11,48 @@ host = socket.gethostbyname(socket.gethostname())
 
 
 class ICMPHeader:
-    def __init__(self, typ=8, code=0, checksum=False):
+    def __init__(self, typ=8, code=0, checksum=0):
         self.type = typ
         self.code = code
-        self.checksum = self.calc_checksum() if not checksum else checksum
-
-
-    def calc_checksum(self):
-        #this function is wrong :D
-#        block = (self.type << 8)|self.code
-        return 1236#~block
+        self.checksum = checksum
 
     def get_bytes(self):
         print(self.checksum & 0xffffffff)
         return self.type.to_bytes(1, "big") + self.code.to_bytes(1, "big") + self.checksum.to_bytes(2, "big")
 
 class ICMPMessage:
-    def __init__(self, header):
-        self.header = header.get_bytes()
+    def __init__(self, header=ICMPHeader()):
+        self.header = header #header always consists of 4 bytes
         self.timestamp = int(time.time())
         self.identifier = random.randint(0, 2**15 - 1)
         self.sequence_num = random.randint(0, 2**15 - 1)
-        self.data = b"hello world"
+        self.data = b"hello worl"
+
+        self.calc_checksum() #needs to be changed
+
+    def calc_checksum(self):
+        bytestr = self.getbmessage()
+        bytelist = [ord(bytestr[i * 2: i * 2 + 2]) for i in range(len(bytestr) // 2)] ##not acounting for the fact that self.data could not be a multiple of two
+        print(bytelist)
+        s = sum(bytelist)
+        print(s)
+
+        s = (s >> 16) + (s >> s & 0xffff)
+        s += (s >> 16)
+
+
+        #block = (self.type << 8)|self.code
+        self.header.checksum = ~s & 0xffff
 
     def getbmessage(self):
         print(self.timestamp)
-        return self.header + self.identifier.to_bytes(2, "big") + self.sequence_num.to_bytes(2, "big") + self.timestamp.to_bytes(4, "big") + int(0).to_bytes(4, "big") + self.data
+        return self.header.get_bytes() + self.identifier.to_bytes(2, "big") + self.sequence_num.to_bytes(2, "big") + self.timestamp.to_bytes(4, "big") + int(0).to_bytes(4, "big") + self.data
 
 def ping():
     pass
 
 #sendto recvfrom
+#the checksum is calculated over the whole message
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
