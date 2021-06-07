@@ -49,8 +49,14 @@ class ICMPMessage:
         print(self.timestamp)
         return self.header.get_bytes() + self.identifier.to_bytes(2, "big") + self.sequence_num.to_bytes(2, "big") + self.timestamp.to_bytes(4, "big") + int(0).to_bytes(4, "big") + self.data
 
-def ping():
-    pass
+def ping(target):
+    message = ICMPHeader
+    host = socket.gethostbyname(socket.gethostname())
+    SOCK.bind(("192.168.0.90", 0)) # needs to be changed
+    SOCK.sendto(message.getbmessage(), (target, 1))
+
+def recv_raw():
+    return SOCK.recvfrom(65565)
 
 #sendto recvfrom
 #the checksum is calculated over the whole message
