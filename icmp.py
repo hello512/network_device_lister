@@ -16,6 +16,13 @@ class ICMPHeader:
         self.code = code
         self.checksum = checksum
 
+    def from_bytes(self, bytes):
+        if len(bytes) != 4:
+            return False
+        self.type = bytes[0]
+        self.code = bytes[1]
+        self.checksum = int.from_bytes(bytes[2:3], "big")
+
     def get_bytes(self):
         print(self.checksum & 0xffffffff)
         return self.type.to_bytes(1, "big") + self.code.to_bytes(1, "big") + self.checksum.to_bytes(2, "big")
@@ -23,9 +30,9 @@ class ICMPHeader:
 class ICMPMessage:
     def __init__(self, header=ICMPHeader()):
         self.header = header #header always consists of 4 bytes
-        self.timestamp = int(time.time())
         self.identifier = random.randint(0, 2**15 - 1)
         self.sequence_num = random.randint(0, 2**15 - 1)
+        self.timestamp = int(time.time())
         self.data = b"hello worl"
 
         self.calc_checksum() #needs to be changed
@@ -37,7 +44,7 @@ class ICMPMessage:
         sum = 0
         bytelist = [bytestr[i * 2: i * 2 + 2] for i in range(len(bytestr) // 2)] ##not acounting for the fact that self.data could not be a multiple of two
         for b in bytelist:
-            print(bytelist)
+            #print(bytelist)
             sum += b[0] * 256 + b[1]
             sum = sum & 0xffffffff
 
@@ -49,14 +56,36 @@ class ICMPMessage:
         print(self.timestamp)
         return self.header.get_bytes() + self.identifier.to_bytes(2, "big") + self.sequence_num.to_bytes(2, "big") + self.timestamp.to_bytes(4, "big") + int(0).to_bytes(4, "big") + self.data
 
-def ping(target):
-    message = ICMPHeader
-    host = socket.gethostbyname(socket.gethostname())
-    SOCK.bind(("192.168.0.90", 0)) # needs to be changed
-    SOCK.sendto(message.getbmessage(), (target, 1))
 
-def recv_raw():
-    return SOCK.recvfrom(65565)
+class ICMPConnection:
+
+    def __init__(self):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, ICMP)
+        self.sock.bind(("192.168.0.218", 0)) # really need to fix this.
+
+    def send(self, target, message):
+        print(target, message.getbmessage())
+        self.sock.sendto(message.getbmessage(), (target, 1))
+
+    def recv_raw(self, timeout):
+        return self.sock.recvfrom(65565)
+
+    def recv(self, timeout):
+        # returns a ICMPMessage object
+        msg = ICMPMessage()
+        bmsg = self.recv_raw(timeout)
+        msg.header.from_bytes(bmsg[0:4])
+        msg.identifier = bmsg[4:6]
+        msg.sequence_num = bmsg[6:8]
+        print(bmsg[10:12])
+        if bmsg[10:12] == b"\x00\x00":
+            msg.timestamp = int.from_bytes(bmsg[8:10], "big")
+        else:
+            msg.timestamp = False
+        msg.data = bmsg[12:]
+        return msg
+
+
 
 #sendto recvfrom
 #the checksum is calculated over the whole message
@@ -72,14 +101,16 @@ if __name__ == "__main__":
 
     header = ICMPHeader()
     message = ICMPMessage(header)
+    con = ICMPConnection()
 
-    host = socket.gethostbyname(socket.gethostname())
-    print("host: ", host)
-    SOCK.bind(("192.168.0.90", 0))
+    #host = socket.gethostbyname(socket.gethostname())
+    #print("host: ", host)
+    #SOCK.bind(("192.168.0.90", 0))
 
     #message = b"hello world"
 
 
     target = "192.168.0.1"
 
-    SOCK.sendto(message.getbmessage(), (target, 1))
+    con.send(target, message)
+    #b = con.recv(1)
