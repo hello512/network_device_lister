@@ -31,18 +31,19 @@ class ICMPMessage:
         self.calc_checksum() #needs to be changed
 
     def calc_checksum(self):
+        ##  calculates checksum
+        ##  seems to work
         bytestr = self.getbmessage()
-        bytelist = [ord(bytestr[i * 2: i * 2 + 2]) for i in range(len(bytestr) // 2)] ##not acounting for the fact that self.data could not be a multiple of two
-        print(bytelist)
-        s = sum(bytelist)
-        print(s)
+        sum = 0
+        bytelist = [bytestr[i * 2: i * 2 + 2] for i in range(len(bytestr) // 2)] ##not acounting for the fact that self.data could not be a multiple of two
+        for b in bytelist:
+            print(bytelist)
+            sum += b[0] * 256 + b[1]
+            sum = sum & 0xffffffff
 
-        s = (s >> 16) + (s >> s & 0xffff)
-        s += (s >> 16)
-
-
-        #block = (self.type << 8)|self.code
-        self.header.checksum = ~s & 0xffff
+        sum = (sum>>16) + (sum & 0xffff)
+        sum = sum + (sum>>16)
+        self.header.checksum = ~sum & 0xffff
 
     def getbmessage(self):
         print(self.timestamp)
@@ -68,7 +69,7 @@ if __name__ == "__main__":
 
     host = socket.gethostbyname(socket.gethostname())
     print("host: ", host)
-    SOCK.bind(("192.168.0.218", 0))
+    SOCK.bind(("192.168.0.90", 0))
 
     #message = b"hello world"
 
