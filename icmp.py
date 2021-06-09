@@ -23,11 +23,6 @@ class ICMPHeader:
         self.code = bytes[1]
         self.checksum = int.from_bytes(bytes[2:3], "big")
 
-    def compare(self, oh):
-        if self.type == oh.type and self.code == oh.code and self.checksum == oh.checksum:
-            return True
-        return False
-
     def get_bytes(self):
         ####print(self.checksum & 0xffffffff)
         return self.type.to_bytes(1, "big") + self.code.to_bytes(1, "big") + self.checksum.to_bytes(2, "big")
@@ -56,12 +51,6 @@ class ICMPMessage:
         sum = (sum>>16) + (sum & 0xffff)
         sum = sum + (sum>>16)
         self.header.checksum = ~sum & 0xffff
-
-    def compare(self, omsg):
-        if self.header.compare(omsg.header) and self.identifier == omsg.identifier and self.sequence_num == omsg.sequence_num and self.timestamp == omsg.timestamp and self.data == omsg.data:
-            print("here")
-            return True
-        return False
 
     def getbmessage(self):
         ##print(self.timestamp)
