@@ -23,8 +23,13 @@ class ICMPHeader:
         self.code = bytes[1]
         self.checksum = int.from_bytes(bytes[2:3], "big")
 
+    def compare(self, oh):
+        if self.type == oh.type and self.code == oh.code and self.checksum == oh.checksum:
+            return True
+        return False
+
     def get_bytes(self):
-        print(self.checksum & 0xffffffff)
+        ####print(self.checksum & 0xffffffff)
         return self.type.to_bytes(1, "big") + self.code.to_bytes(1, "big") + self.checksum.to_bytes(2, "big")
 
 class ICMPMessage:
@@ -44,7 +49,7 @@ class ICMPMessage:
         sum = 0
         bytelist = [bytestr[i * 2: i * 2 + 2] for i in range(len(bytestr) // 2)] ##not acounting for the fact that self.data could not be a multiple of two
         for b in bytelist:
-            #print(bytelist)
+            #####print(bytelist)
             sum += b[0] * 256 + b[1]
             sum = sum & 0xffffffff
 
@@ -52,8 +57,14 @@ class ICMPMessage:
         sum = sum + (sum>>16)
         self.header.checksum = ~sum & 0xffff
 
+    def compare(self, omsg):
+        if self.header.compare(omsg.header) and self.identifier == omsg.identifier and self.sequence_num == omsg.sequence_num and self.timestamp == omsg.timestamp and self.data == omsg.data:
+            print("here")
+            return True
+        return False
+
     def getbmessage(self):
-        print(self.timestamp)
+        ##print(self.timestamp)
         return self.header.get_bytes() + self.identifier.to_bytes(2, "big") + self.sequence_num.to_bytes(2, "big") + self.timestamp.to_bytes(4, "big") + int(0).to_bytes(4, "big") + self.data
 
 
@@ -65,7 +76,7 @@ class ICMPConnection:
         self.sock.bind((socket.gethostname(), 0)) # seems to find the right host.
 
     def send(self, target, message):
-        print(target, message.getbmessage())
+        ##print(target, message.getbmessage())
         self.sock.sendto(message.getbmessage(), (target, 1))
 
     def recv_raw(self, timeout):
@@ -74,11 +85,11 @@ class ICMPConnection:
     def recv(self, timeout):
         # returns a ICMPMessage object
         msg = ICMPMessage()
-        bmsg = self.recv_raw(timeout)
+        bmsg = self.recv_raw(timeout)[0]
         msg.header.from_bytes(bmsg[0:4])
-        msg.identifier = bmsg[4:6]
-        msg.sequence_num = bmsg[6:8]
-        print(bmsg[10:12])
+        msg.identifier = int.from_bytes(bmsg[4:6], "big")
+        msg.sequence_num = int.from_bytes(bmsg[6:8], "big")
+        ##print(bmsg[10:12])
         if bmsg[10:12] == b"\x00\x00":
             msg.timestamp = int.from_bytes(bmsg[8:10], "big")
         else:
@@ -96,16 +107,16 @@ if __name__ == "__main__":
         ip = sys.argv[1]
     else:
         print("no ip was specified")
-    print(ip)
-    print("socket closed")
-    print(socket.gethostbyname(socket.gethostname()))
+    ##print(ip)
+    ##print("socket closed")
+    ##print(socket.gethostbyname(socket.gethostname()))
 
     header = ICMPHeader()
     message = ICMPMessage(header)
     con = ICMPConnection()
 
     #host = socket.gethostbyname(socket.gethostname())
-    #print("host: ", host)
+    ###print("host: ", host)
     #SOCK.bind(("192.168.0.90", 0))
 
     #message = b"hello world"
