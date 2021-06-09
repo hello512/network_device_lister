@@ -1,21 +1,51 @@
-import subprocess
+##	this scripts lists all pingable devices in the local network
 
-class Ip:
-	def __init__(self, b0 = 0, b1 = 0, b2 = 0, b3 = 0):
-		self.b0 = b0
-		self.b1 = b1
-		self.b2 = b2
-		self.b3 = b3
-
-	def __repr__(self):
-		return(str(self.b0) + '.' + str(self.b1) + '.' + str(self.b2) + '.' + str(self.b3))
+import sys
+import icmp
+import time
+import socket
+import threading
 
 
+CONNECTIONS = []
+MSGS = []
 
-ip = Ip(192, 168, 0, 167)
+def ping(ip):
+	con = icmp.ICMPConnection()
+	header = icmp.ICMPHeader()
+	msg = icmp.ICMPMessage(header)
+	MSGS.append(msg.getbmessage())
+	#try:
+	con.send(ip, msg)
+	rm = con.recv(1)#.getbmessage())
+	#print(rm)
+	if rm.getbmessage() in MSGS:
+		print(ip, "worked")
+	#except:
+	#	print(ip, "not working")
 
-for i in range(1, 256):
-	ret = subprocess.run(['ping', '-c', '1', '192.168.0.' + str(i)], capture_output=True)
-	if ret.returncode == 0:
-		print('192.168.0.' + str(i) + ' is online')
-#	time.sleep(0.1)
+#for testing purposes: ip range from 0.0 to 0.255
+def ping_all():
+	t0 = time.time()
+	con = icmp.ICMPConnection()
+	for i in range(0, 256):
+		header = icmp.ICMPHeader()
+		msg = icmp.ICMPMessage(header)
+		MSGS.append(msg.getbmessage())
+		#try:
+		con.send("192.168.0." + str(i), msg)
+
+		#t = threading.Thread(target=ping, args=["192.168.0." + str(i)])
+		#t.start()
+		#CONNECTIONS.append(t)
+	while True:
+		rm = con.recv(1)
+		if rm.getbmessage() in MSGS:
+			print("worked")
+
+
+
+
+if __name__ == "__main__":
+	ping_all()
+	print(MSGS)
