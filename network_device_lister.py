@@ -40,6 +40,9 @@ def ping_all():
 		#CONNECTIONS.append(t)
 	while True:
 		rm = con.recv(1)
+		if not rm:
+			print("stoping program: timed out")
+			break
 		for m in MSGS:
 			if m[0].check_echo(rm):
 				print(m[1], "worked")

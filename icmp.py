@@ -76,14 +76,22 @@ class ICMPConnection:
         ##print(target, message.getbmessage())
         self.sock.sendto(message.getbmessage(), (target, 1))
 
-    def recv_raw(self, timeout):
-        return self.sock.recvfrom(65565)
+    def recv_raw(self, timeout=0):
+        self.sock.settimeout(timeout)
+        try:
+            return self.sock.recvfrom(65565)
+        except:
+            return False
 
-    def recv(self, timeout):
+
+    def recv(self, timeout=0):
         # returns a ICMPMessage object
         #23
         msg = ICMPMessage()
-        bmsg = self.recv_raw(timeout)[0][20:]
+        bmsg = self.recv_raw(timeout)
+        if bmsg == False:
+            return False
+        bmsg = bmsg[0][20:]
         msg.header.from_bytes(bmsg[0:4])
         msg.identifier = int.from_bytes(bmsg[4:6], "big")
         msg.sequence_num = int.from_bytes(bmsg[6:8], "big")
