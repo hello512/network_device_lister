@@ -21,7 +21,7 @@ class ICMPHeader:
             return False
         self.type = bytes[0]
         self.code = bytes[1]
-        self.checksum = int.from_bytes(bytes[2:3], "big")
+        self.checksum = int.from_bytes(bytes[2:4], "big")
 
     def get_bytes(self):
         ####print(self.checksum & 0xffffffff)
@@ -52,6 +52,14 @@ class ICMPMessage:
         sum = sum + (sum>>16)
         self.header.checksum = ~sum & 0xffff
 
+    def check_echo(self, echo):
+        if echo.header.code != 0 and echo.header.type != 0:
+            return False
+        if echo.identifier == self.identifier and echo.sequence_num == self.sequence_num:
+            return True
+        return False
+
+
     def getbmessage(self):
         ##print(self.timestamp)
         return self.header.get_bytes() + self.identifier.to_bytes(2, "big") + self.sequence_num.to_bytes(2, "big") + self.timestamp.to_bytes(4, "big") + int(0).to_bytes(4, "big") + self.data
@@ -73,17 +81,19 @@ class ICMPConnection:
 
     def recv(self, timeout):
         # returns a ICMPMessage object
+        #23
         msg = ICMPMessage()
-        bmsg = self.recv_raw(timeout)[0]
+        bmsg = self.recv_raw(timeout)[0][20:]
         msg.header.from_bytes(bmsg[0:4])
         msg.identifier = int.from_bytes(bmsg[4:6], "big")
         msg.sequence_num = int.from_bytes(bmsg[6:8], "big")
         ##print(bmsg[10:12])
-        if bmsg[10:12] == b"\x00\x00":
-            msg.timestamp = int.from_bytes(bmsg[8:10], "big")
+        if bmsg[12:16] == b"\x00\x00\x00\x00":
+            msg.timestamp = int.from_bytes(bmsg[8:12], "big")
+            msg.data = bmsg[16:]
         else:
             msg.timestamp = False
-        msg.data = bmsg[12:]
+            msg.data = bmsg[8:]
         return msg
 
 
