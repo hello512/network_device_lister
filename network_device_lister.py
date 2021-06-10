@@ -31,7 +31,7 @@ def ping_all():
 	for i in range(0, 256):
 		header = icmp.ICMPHeader()
 		msg = icmp.ICMPMessage(header)
-		MSGS.append(msg.getbmessage())
+		MSGS.append((msg, "192.168.0." + str(i)))
 		#try:
 		con.send("192.168.0." + str(i), msg)
 
@@ -40,12 +40,21 @@ def ping_all():
 		#CONNECTIONS.append(t)
 	while True:
 		rm = con.recv(1)
-		if rm.getbmessage() in MSGS:
-			print("worked")
+		for m in MSGS:
+			if m[0].check_echo(rm):
+				print(m[1], "worked")
 
 
 
 
 if __name__ == "__main__":
 	ping_all()
-	print(MSGS)
+	#print(MSGS)
+"""
+	con = icmp.ICMPConnection()
+	msg = icmp.ICMPMessage()
+	print(msg.getbmessage())
+	con.send("192.168.0.1", msg)
+	rm = con.recv(1)
+	print(rm.getbmessage())
+"""
