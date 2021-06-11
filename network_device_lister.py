@@ -31,7 +31,7 @@ def ping_all():
 			break
 		for m in MSGS:
 			if m[0].check_echo(rm):
-				print(m[1], "worked")
+				print(m[1], "	answered in: ", time.time() - rm.timestamp, "	seconds")
 
 
 
