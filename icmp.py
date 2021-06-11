@@ -5,10 +5,6 @@ import random
 
 ICMP = socket.getprotobyname("icmp")
 
-SOCK = socket.socket(socket.AF_INET, socket.SOCK_RAW, ICMP)
-
-host = socket.gethostbyname(socket.gethostname())
-
 
 class ICMPHeader:
     def __init__(self, typ=8, code=0, checksum=0):
