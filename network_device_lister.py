@@ -21,9 +21,6 @@ def ping_all():
 		#try:
 		con.send("192.168.0." + str(i), msg)
 
-		#t = threading.Thread(target=ping, args=["192.168.0." + str(i)])
-		#t.start()
-		#CONNECTIONS.append(t)
 	while True:
 		rm = con.recv(1)
 		if not rm:
