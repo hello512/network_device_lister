@@ -11,7 +11,7 @@ CONNECTIONS = []
 MSGS = []
 
 #for testing purposes: ip range from 0.0 to 0.255
-def ping_all():
+def ping_all(args):
 	t0 = time.time()
 	con = icmp.ICMPConnection()
 	for i in range(0, 256):
@@ -34,7 +34,29 @@ def ping_all():
 				print(m[1], "	answered in: ", time.time() - rm.timestamp, "	seconds")
 
 
+class Args:
+	def __init__(self, file_name="", start_ip="192.168.0.1", end_ip="192.168.0.255"):
+		self.file_name = file_name
+		self.start_ip = start_ip
+		self.end_ip = end_ip
+
+
+def analyse_args():
+	args = Args
+	for i, a in enumerate(sys.argv):
+		if a == "-s":
+			args.start_ip = sys.argv[i + 1]
+
+		if a == "-e":
+			args.end_ip = sys.argv[i + 1]
+
+		if a == "-f":
+			args.file_name = sys.argv[i + 1]
+
+		print(a)
+
 
 
 if __name__ == "__main__":
-	ping_all()
+	args = analyse_args()
+	ping_all(args)
