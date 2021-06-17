@@ -14,16 +14,17 @@ MSGS = []
 def ping_all(args):
 	t0 = time.time()
 	con = icmp.ICMPConnection()
-	for i in range(0, 256):
-		header = icmp.ICMPHeader()
-		msg = icmp.ICMPMessage(header)
-		MSGS.append((msg, "192.168.0." + str(i)))
-		#try:
-		con.send("192.168.0." + str(i), msg)
 
-		#t = threading.Thread(target=ping, args=["192.168.0." + str(i)])
-		#t.start()
-		#CONNECTIONS.append(t)
+	for i0 in range(args.start_ip[0], args.end_ip[0] + 1):
+		for i1 in range(args.start_ip[1], args.end_ip[1] + 1):
+			for i2 in range(args.start_ip[2], args.end_ip[2] + 1):
+				for i3 in range(args.start_ip[3], args.end_ip[3] + 1):
+					header = icmp.ICMPHeader()
+					msg = icmp.ICMPMessage(header)
+					ip = str(i0) + "." + str(i1) + "." + str(i2) + "." + str(i3)
+					MSGS.append((msg, ip))
+					con.send(ip, msg)
+
 	while True:
 		rm = con.recv(1)
 		if not rm:
@@ -37,12 +38,12 @@ def ping_all(args):
 class Args:
 	def __init__(self, file_name="", start_ip="192.168.0.1", end_ip="192.168.0.255"):
 		self.file_name = file_name
-		self.start_ip = start_ip
-		self.end_ip = end_ip
+		self.start_ip = [int(_) for _ in start_ip.split(".")]
+		self.end_ip = [int(_) for _ in end_ip.split(".")]
 
 
 def analyse_args():
-	args = Args
+	args = Args()
 	for i, a in enumerate(sys.argv):
 		if a == "-s":
 			args.start_ip = sys.argv[i + 1]
@@ -53,8 +54,7 @@ def analyse_args():
 		if a == "-f":
 			args.file_name = sys.argv[i + 1]
 
-		print(a)
-
+	return args
 
 
 if __name__ == "__main__":
