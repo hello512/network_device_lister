@@ -15,6 +15,7 @@ def ping_all(args):
 	t0 = time.time()
 	con = icmp.ICMPConnection()
 
+	args.splt()
 	for i0 in range(args.start_ip[0], args.end_ip[0] + 1):
 		for i1 in range(args.start_ip[1], args.end_ip[1] + 1):
 			for i2 in range(args.start_ip[2], args.end_ip[2] + 1):
@@ -38,18 +39,24 @@ def ping_all(args):
 class Args:
 	def __init__(self, file_name="", start_ip="192.168.0.1", end_ip="192.168.0.255"):
 		self.file_name = file_name
-		self.start_ip = [int(_) for _ in start_ip.split(".")]
-		self.end_ip = [int(_) for _ in end_ip.split(".")]
+		self.sip = start_ip
+		self.eip = end_ip
+		self.start_ip = [int(_) for _ in self.sip.split(".")]
+		self.end_ip = [int(_) for _ in self.eip.split(".")]
+
+	def splt(self):
+		self.start_ip = [int(_) for _ in self.sip.split(".")]
+		self.end_ip = [int(_) for _ in self.eip.split(".")]
 
 
 def analyse_args():
 	args = Args()
 	for i, a in enumerate(sys.argv):
 		if a == "-s":
-			args.start_ip = sys.argv[i + 1]
+			args.sip = sys.argv[i + 1]
 
 		if a == "-e":
-			args.end_ip = sys.argv[i + 1]
+			args.eip = sys.argv[i + 1]
 
 		if a == "-f":
 			args.file_name = sys.argv[i + 1]
