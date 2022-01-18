@@ -66,7 +66,7 @@ class ICMPConnection:
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, ICMP)
         #self.sock.bind(("192.168.0.218", 0)) # really need to fix this.
-        self.sock.bind((socket.gethostname(), 0)) # seems to find the right host.
+        #self.sock.bind((socket.gethostname(), 0)) # seems to find the right host.
 
     def send(self, target, message):
         ##print(target, message.getbmessage())
